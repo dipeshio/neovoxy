@@ -1,6 +1,7 @@
 package me.cortex.neovoxy.common.world;
 
 import me.cortex.neovoxy.common.Logger;
+import me.cortex.neovoxy.common.world.other.Mapper;
 import me.cortex.neovoxy.commonImpl.VoxyCommon;
 import me.cortex.neovoxy.commonImpl.WorldIdentifier;
 
@@ -25,8 +26,10 @@ public class WorldEngine implements Closeable {
     private final Path storagePath;
     private final AtomicInteger refCount = new AtomicInteger(0);
     
+    private Mapper mapper;
+    private ISectionDirtyCallback dirtyCallback;
+    
     // TODO: Implement these components
-    // private final Mapper mapper;
     // private final StorageBackend storage;
     // private final ActiveSectionTracker sectionTracker;
     
@@ -41,6 +44,20 @@ public class WorldEngine implements Closeable {
         // TODO: Initialize storage backend
         // TODO: Load mapper data
         // TODO: Set up section tracking
+    }
+    
+    /**
+     * Set the block state / biome mapper.
+     */
+    public void setMapper(Mapper mapper) {
+        this.mapper = mapper;
+    }
+    
+    /**
+     * Get the mapper.
+     */
+    public Mapper getMapper() {
+        return mapper;
     }
     
     /**
@@ -77,7 +94,16 @@ public class WorldEngine implements Closeable {
      * Set callback for section dirty events.
      */
     public void setDirtyCallback(ISectionDirtyCallback callback) {
-        // TODO: Wire up to section tracker
+        this.dirtyCallback = callback;
+    }
+    
+    /**
+     * Notify that a section has been modified.
+     */
+    public void notifySectionDirty(long sectionPos) {
+        if (dirtyCallback != null) {
+            dirtyCallback.onSectionDirty(sectionPos);
+        }
     }
     
     @Override
