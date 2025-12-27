@@ -122,8 +122,14 @@ public class NeoVoxyConfig {
     
     /**
      * Check if rendering is currently enabled.
+     * Returns true if config not loaded yet (safe default).
      */
     public static boolean isRenderingEnabled() {
-        return ENABLED.get() && ENABLE_RENDERING.get();
+        try {
+            return ENABLED.get() && ENABLE_RENDERING.get();
+        } catch (IllegalStateException e) {
+            // Config not loaded yet, default to enabled
+            return true;
+        }
     }
 }
