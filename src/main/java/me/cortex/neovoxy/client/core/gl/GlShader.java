@@ -200,7 +200,7 @@ public class GlShader implements AutoCloseable {
                 String importedSource = loadSource(importPath);
                 // Recursively process imports
                 importedSource = processImports(importedSource);
-                matcher.appendReplacement(result, Matcher.quoteReplacement(importedSource));
+                matcher.appendReplacement(result, Matcher.quoteReplacement(importedSource + "\n"));
             }
             matcher.appendTail(result);
 
@@ -246,6 +246,13 @@ public class GlShader implements AutoCloseable {
             if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_FALSE) {
                 String log = glGetShaderInfoLog(shader);
                 glDeleteShader(shader);
+                String[] lines = source.split("\n");
+                StringBuilder sb = new StringBuilder();
+                sb.append("Shader source dump:\n");
+                for (int i = 0; i < lines.length; i++) {
+                    sb.append(String.format("%4d: %s%n", i + 1, lines[i]));
+                }
+                Logger.error(sb.toString());
                 throw new RuntimeException("Shader compilation failed:\n" + log);
             }
 

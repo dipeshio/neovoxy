@@ -63,7 +63,7 @@ vec3 swizzelDataAxis(uint axis, vec3 data) {
 // same with flowers etc
 void main() {
     int cornerIdx = gl_VertexID&3;
-    Quad quad = quadData[uint(gl_VertexID)>>2];
+    Quad quad = getQuad(uint(gl_VertexID)>>2);
     uint face = extractFace(quad);
     uint modelId = extractStateId(quad);
     BlockModel model = modelData[modelId];

@@ -15,8 +15,13 @@ public class NativeLoader {
 
     public static void load() {
         try {
-            Path tempDir = Files.createTempDirectory("neovoxy_natives");
-            tempDir.toFile().deleteOnExit();
+            // Use a stable, persistent directory in the user's home folder
+            String userHome = System.getProperty("user.home");
+            Path nativeDir = Path.of(userHome, ".neovoxy", "natives");
+
+            if (!Files.exists(nativeDir)) {
+                Files.createDirectories(nativeDir);
+            }
 
             for (String libName : LIBRARIES) {
                 String resourcePath = NATIVE_DIR + "/" + libName;
@@ -27,27 +32,22 @@ public class NativeLoader {
                     continue;
                 }
 
-                Path tempFile = tempDir.resolve(libName);
-                Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-                tempFile.toFile().deleteOnExit();
-                tempFile.toFile().setExecutable(true);
+                Path targetFile = nativeDir.resolve(libName);
 
-                String absPath = tempFile.toAbsolutePath().toString();
-                System.out
-                        .println("NeoVoxy: Loading native library directly: " + absPath);
+                // Always overwrite to ensure we have the correct version from this jar
+                Files.copy(stream, targetFile, StandardCopyOption.REPLACE_EXISTING);
 
-                try {
-                    System.load(absPath);
-                    System.out.println("NeoVoxy: Successfully loaded: " + libName);
-                } catch (UnsatisfiedLinkError e) {
-                    System.err.println("NeoVoxy: Failed to load " + libName + ": " + e.getMessage());
-                }
+                // Ensure executable
+                targetFile.toFile().setExecutable(true);
+
+                String absPath = targetFile.toAbsolutePath().toString();
+                System.out.println("NeoVoxy: Extracted native library to: " + absPath);
             }
 
-            // We NO LONGER set org.lwjgl.librarypath as it doesn't work across module
-            // layers for
-            // JarJar.
-            // Direct System.load() injects it into the ClassLoader.
+            // Set the library path for LWJGL to find the natives later
+            String nativePath = nativeDir.toAbsolutePath().toString();
+            System.setProperty("org.lwjgl.librarypath", nativePath);
+            System.out.println("NeoVoxy: Set persistent org.lwjgl.librarypath to: " + nativePath);
 
         } catch (IOException e) {
             throw new RuntimeException("NeoVoxy: Failed to unpack natives", e);

@@ -1,4 +1,4 @@
-#ifdef GL_ARB_gpu_shader_int64
+#if defined(GL_ARB_gpu_shader_int64) || defined(VOXY_USE_INT64)
 #define Quad uint64_t
 
 #define Eu32(data, amountBits, shift) (uint((data)>>(shift))&((1u<<(amountBits))-1))

@@ -25,8 +25,16 @@ layout(binding = BLOCK_MODEL_TEXTURE_BINDING) uniform sampler2D blockModelAtlas;
 #endif
 #ifdef QUAD_BUFFER_BINDING
 layout(binding = QUAD_BUFFER_BINDING, std430) readonly restrict buffer QuadBuffer {
-    Quad quadData[];
+    uvec2 quadDataRaw[];
 };
+
+Quad getQuad(uint index) {
+#if defined(GL_ARB_gpu_shader_int64) || defined(VOXY_USE_INT64)
+    return packUint2x32(quadDataRaw[index]);
+#else
+    return ivec2(quadDataRaw[index]);
+#endif
+}
 #endif
 
 #ifdef DRAW_BUFFER_BINDING

@@ -1,5 +1,6 @@
 #version 460 core
 #extension GL_ARB_gpu_shader_int64 : enable
+#define VOXY_USE_INT64
 
 #ifndef QUAD_BUFFER_BINDING
 #define QUAD_BUFFER_BINDING 1
@@ -44,7 +45,7 @@ void main() {
     taaOffset = taaShift();
 
     QuadData quad;
-    setupQuad(quad, quadData[uint(gl_VertexID)>>2], positionBuffer[gl_BaseInstance], (gl_VertexID&3) == 1);
+    setupQuad(quad, getQuad(uint(gl_VertexID)>>2), positionBuffer[gl_BaseInstance], (gl_VertexID&3) == 1);
 
     uint cornerId = gl_VertexID&3;
     gl_Position = getQuadCornerPos(quad, cornerId);
