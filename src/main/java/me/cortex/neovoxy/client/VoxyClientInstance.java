@@ -15,6 +15,8 @@ import net.minecraft.client.Minecraft;
  */
 public class VoxyClientInstance extends VoxyInstance {
     
+    private static final int DEFAULT_SERVICE_THREADS = 4;
+    
     private final WorldEngine worldEngine;
     private final ServiceManager serviceManager;
     private VoxyRenderSystem renderSystem;
@@ -24,13 +26,27 @@ public class VoxyClientInstance extends VoxyInstance {
         
         Logger.info("Creating VoxyClientInstance for: " + worldId);
         
-        // Initialize the service thread pool
-        this.serviceManager = new ServiceManager(NeoVoxyConfig.SERVICE_THREADS.get());
+        // Initialize the service thread pool - use default if config not loaded yet
+        int threadCount = getServiceThreadCount();
+        this.serviceManager = new ServiceManager(threadCount);
         
         // Initialize the world engine for LOD storage
         this.worldEngine = new WorldEngine(worldId);
         
-        Logger.info("VoxyClientInstance created successfully");
+        Logger.info("VoxyClientInstance created successfully with {} service threads", threadCount);
+    }
+    
+    /**
+     * Safely get service thread count, using default if config not loaded.
+     */
+    private static int getServiceThreadCount() {
+        try {
+            return NeoVoxyConfig.SERVICE_THREADS.get();
+        } catch (IllegalStateException e) {
+            // Config not loaded yet, use default
+            Logger.info("Config not loaded yet, using default service thread count: {}", DEFAULT_SERVICE_THREADS);
+            return DEFAULT_SERVICE_THREADS;
+        }
     }
     
     /**
@@ -43,7 +59,7 @@ public class VoxyClientInstance extends VoxyInstance {
             return;
         }
         
-        if (!NeoVoxyConfig.isRenderingEnabled()) {
+        if (!isRenderingEnabled()) {
             Logger.info("Rendering disabled in config, skipping RenderSystem creation");
             return;
         }
@@ -53,6 +69,18 @@ public class VoxyClientInstance extends VoxyInstance {
             Logger.info("VoxyRenderSystem created");
         } catch (Exception e) {
             Logger.error("Failed to create VoxyRenderSystem", e);
+        }
+    }
+    
+    /**
+     * Safely check if rendering is enabled.
+     */
+    private static boolean isRenderingEnabled() {
+        try {
+            return NeoVoxyConfig.isRenderingEnabled();
+        } catch (IllegalStateException e) {
+            // Config not loaded yet, default to enabled
+            return true;
         }
     }
     
@@ -121,13 +149,18 @@ public class VoxyClientInstance extends VoxyInstance {
         boolean renderingEnabled
     ) {
         public static Config fromNeoVoxyConfig() {
-            return new Config(
-                NeoVoxyConfig.SECTION_RENDER_DISTANCE.get(),
-                NeoVoxyConfig.SERVICE_THREADS.get(),
-                NeoVoxyConfig.SUBDIVISION_SIZE.get().floatValue(),
-                NeoVoxyConfig.INGEST_ENABLED.get(),
-                NeoVoxyConfig.ENABLE_RENDERING.get()
-            );
+            try {
+                return new Config(
+                    NeoVoxyConfig.SECTION_RENDER_DISTANCE.get(),
+                    NeoVoxyConfig.SERVICE_THREADS.get(),
+                    NeoVoxyConfig.SUBDIVISION_SIZE.get().floatValue(),
+                    NeoVoxyConfig.INGEST_ENABLED.get(),
+                    NeoVoxyConfig.ENABLE_RENDERING.get()
+                );
+            } catch (IllegalStateException e) {
+                // Config not loaded yet, use defaults
+                return new Config(32, DEFAULT_SERVICE_THREADS, 16.0f, true, true);
+            }
         }
     }
 }
