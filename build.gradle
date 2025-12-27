@@ -20,6 +20,21 @@ configurations {
     natives
 }
 
+dependencies {
+    // Hybrid Bundling Strategy
+    // 1. Use jarJar for main Java libraries to ensure safe module isolation
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "[${lwjgl_version}]")
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "[${lwjgl_version}]")
+    
+    // Explicitly add to compile classpath so javac can find the symbols
+    compileOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
+    compileOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}"
+    
+    // 2. Add natives to the configuration for extracting later
+    natives "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
+    natives "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
+}
+
 neoForge {
     version = project.neo_version
 
@@ -53,108 +68,24 @@ neoForge {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+// ... existing configuration ...
 
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
+sourceSets.main.resources { 
+    srcDir 'src/generated/resources'
+    srcDir 'build/generated/natives' // Add generated natives to resources
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    
-    // Modrinth Maven for Embeddium
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
-    }
-}
-
-dependencies {
-    // LWJGL Extensions for native storage
-    implementation platform("org.lwjgl:lwjgl-bom:${lwjgl_version}")
-    
-    // LMDB - Lightning Memory-Mapped Database
-    implementation "org.lwjgl:lwjgl-lmdb"
-    
-    // Zstd compression
-    implementation "org.lwjgl:lwjgl-zstd"
-    
-    // Hybrid Bundling Strategy
-    // 1. Use jarJar for main Java libraries to ensure safe module isolation
-    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "[${lwjgl_version}]")
-    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "[${lwjgl_version}]")
-    
-    // 2. Add natives to the configuration for extracting later
-    natives "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
-    natives "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
-
-    // Also add them to runtime classpath so they work in IDE
-    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
-    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}"
-    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
-    
-    // Compression libraries
-    implementation 'org.lz4:lz4-java:1.8.0'
-    implementation 'org.tukaani:xz:1.10'
-    
-    // Jedis for optional Redis storage backend
-    implementation 'redis.clients:jedis:5.1.0'
-    implementation 'org.apache.commons:commons-pool2:2.12.0'
-    
-    // Embeddium - required dependency for rendering integration
-    implementation "maven.modrinth:embeddium:1.0.15+mc1.21.1"
-}
-
-tasks.withType(ProcessResources).configureEach {
-    var replaceProperties = [
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            mod_authors            : mod_authors,
-            mod_description        : "High-performance Level of Detail (LOD) rendering engine for Minecraft",
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            neo_version_range      : neo_version_range,
-            loader_version_range   : loader_version_range
-    ]
-    inputs.properties replaceProperties
-
-    filesMatching(['META-INF/neoforge.mods.toml']) {
-        expand replaceProperties
-    }
-}
-
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/repo"
-        }
-    }
-}
+// ... existing configuration ...
 
 // Create a task to copy natives to resources
 tasks.register('bundleNatives', Copy) {
     from {
         configurations.natives.collect { zipTree(it) }
     }
-    into "build/resources/main/META-INF/natives/linux"
-    include "*.so" // Only include Linux shared objects
+    into "build/generated/natives/META-INF/natives/linux" // Output to generated directory
+    include "**/*.so" // Include all swl files, including those in subdirs
+    eachFile { f -> f.path = f.name } // Flatten directory structure
+    includeEmptyDirs = false
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
@@ -163,6 +94,8 @@ processResources.dependsOn('bundleNatives')
 
 // Also ensure they are available for the jar task
 jar.dependsOn('bundleNatives')
+
+// ... rest of file ...
 
 tasks.named('jar', Jar).configure {
     manifest {
