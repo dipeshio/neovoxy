@@ -90,10 +90,32 @@ tasks.register('bundleNatives', Copy) {
 }
 
 // Ensure natives are bundled before processResources
+// Ensure natives are bundled before processResources
 processResources.dependsOn('bundleNatives')
 
 // Also ensure they are available for the jar task
 jar.dependsOn('bundleNatives')
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : "High-performance Level of Detail (LOD) rendering engine for Minecraft",
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
 
 // ... rest of file ...
 
