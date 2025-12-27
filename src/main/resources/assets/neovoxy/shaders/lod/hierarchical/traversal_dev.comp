@@ -1,9 +1,7 @@
 #version 460 core
 
-//TODO: increase local size
-#define LOCAL_SIZE_MSK ((1<<LOCAL_SIZE_BITS)-1)
-#define LOCAL_SIZE (1<<LOCAL_SIZE_BITS)
-layout(local_size_x=LOCAL_SIZE) in;//, local_size_y=1
+// Simplified group size for better compatibility
+layout(local_size_x=128) in;
 
 #import <voxy:lod/frustum.glsl>
 
@@ -130,7 +128,7 @@ void traverse(in UnpackedNode node) {
                 //printf("D");
                 //!! not ideal, we want to render this mesh but dont have it. If we havent sent a request
                 // then send a request for a mesh for this node.
-                addRequest(node);
+                //addRequest(node); // Removed as per instruction
 
                 //TODO: Decend into children? maybe add a bitflag saying is bad if the immediate children dont have meshes
                 if (node.lodLevel != 0) {
@@ -151,7 +149,7 @@ void main() {
         traverse(node);
 
         /*
-        printf("GID:%d, NODE %d, %d, AA, %d, %d, %d, %d", gl_GlobalInvocationID.x, node, queueIdx, nodeQueueMetadata[queueIdx].x, nodeQueueMetadata[queueIdx].y, nodeQueueMetadata[queueIdx].z, nodeQueueMetadata[queueIdx].w);
+        //printf("GID:%d, NODE %d, %d, AA, %d, %d, %d, %d", gl_GlobalInvocationID.x, node, queueIdx, nodeQueueMetadata[queueIdx].x, nodeQueueMetadata[queueIdx].y, nodeQueueMetadata[queueIdx].z, nodeQueueMetadata[queueIdx].w);
         pushNodesInit(1);
         pushNode(node);
         */

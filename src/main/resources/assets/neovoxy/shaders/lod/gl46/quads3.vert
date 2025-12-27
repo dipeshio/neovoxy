@@ -1,11 +1,21 @@
 #version 460 core
 #extension GL_ARB_gpu_shader_int64 : enable
 
+#ifndef QUAD_BUFFER_BINDING
 #define QUAD_BUFFER_BINDING 1
+#endif
+#ifndef MODEL_BUFFER_BINDING
 #define MODEL_BUFFER_BINDING 3
+#endif
+#ifndef MODEL_COLOUR_BUFFER_BINDING
 #define MODEL_COLOUR_BUFFER_BINDING 4
+#endif
+#ifndef POSITION_SCRATCH_BINDING
 #define POSITION_SCRATCH_BINDING 5
+#endif
+#ifndef LIGHTING_SAMPLER_BINDING
 #define LIGHTING_SAMPLER_BINDING 1
+#endif
 
 #ifdef USE_SINGLE_TRI
 #define USE_NV_BARRY

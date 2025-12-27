@@ -8,10 +8,7 @@ import me.cortex.neovoxy.client.core.rendering.hierachical.NodeCleaner;
 import me.cortex.neovoxy.client.core.rendering.util.SharedIndexBuffer;
 import me.cortex.neovoxy.common.Logger;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL43.*;
 import static org.lwjgl.opengl.GL45.*;
 
 /**
@@ -47,32 +44,39 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
             return;
 
         try {
+            // Base defines for all shaders in this pipeline
+            GlShader.Builder baseBuilder = new GlShader.Builder()
+                    .define("QUAD_BUFFER_BINDING",
+                            String.valueOf(me.cortex.neovoxy.client.core.gl.RenderBindings.QUAD_BUFFER_BINDING))
+                    .define("MODEL_BUFFER_BINDING",
+                            String.valueOf(me.cortex.neovoxy.client.core.gl.RenderBindings.MODEL_BUFFER_BINDING))
+                    .define("MODEL_COLOUR_BUFFER_BINDING",
+                            String.valueOf(me.cortex.neovoxy.client.core.gl.RenderBindings.MODEL_COLOUR_BUFFER_BINDING))
+                    .define("POSITION_SCRATCH_BINDING",
+                            String.valueOf(me.cortex.neovoxy.client.core.gl.RenderBindings.POSITION_SCRATCH_BINDING))
+                    .define("LIGHTING_SAMPLER_BINDING",
+                            String.valueOf(me.cortex.neovoxy.client.core.gl.RenderBindings.LIGHTING_SAMPLER_BINDING))
+                    // Face tint values (Minecraft's directional shading)
+                    .define("Z_AXIS_FACE_TINT", "0.8") // North/South faces
+                    .define("X_AXIS_FACE_TINT", "0.6") // East/West faces
+                    .define("UP_FACE_TINT", "1.0") // Top face
+                    .define("DOWN_FACE_TINT", "0.5") // Bottom face
+                    .define("NO_SHADE_FACE_TINT", "1.0"); // Unshaded
+
             // Load quad rendering shaders
             String vertSource = GlShader.Builder.loadSource("lod/gl46/quads3.vert");
             String fragSource = GlShader.Builder.loadSource("lod/gl46/quads.frag");
 
-            quadShader = new GlShader.Builder()
+            quadShader = baseBuilder.copy()
                     .vertex(vertSource)
                     .fragment(fragSource)
-                    // Face tint values (Minecraft's directional shading)
-                    .define("Z_AXIS_FACE_TINT", "0.8") // North/South faces
-                    .define("X_AXIS_FACE_TINT", "0.6") // East/West faces
-                    .define("UP_FACE_TINT", "1.0") // Top face
-                    .define("DOWN_FACE_TINT", "0.5") // Bottom face
-                    .define("NO_SHADE_FACE_TINT", "1.0") // Unshaded
                     .build();
 
             // Translucent shader with alpha blending
-            translucentShader = new GlShader.Builder()
+            translucentShader = baseBuilder.copy()
                     .vertex(vertSource)
                     .fragment(fragSource)
                     .define("TRANSLUCENT")
-                    // Face tint values (Minecraft's directional shading)
-                    .define("Z_AXIS_FACE_TINT", "0.8") // North/South faces
-                    .define("X_AXIS_FACE_TINT", "0.6") // East/West faces
-                    .define("UP_FACE_TINT", "1.0") // Top face
-                    .define("DOWN_FACE_TINT", "0.5") // Bottom face
-                    .define("NO_SHADE_FACE_TINT", "1.0") // Unshaded
                     .build();
 
             // Create VAO (vertex attributes are generated in shader)
@@ -109,11 +113,10 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
         // Use quad shader
         quadShader.use();
 
-        // TODO: Set uniforms (MVP, camera position, etc.)
-
-        // TODO: Bind section/geometry buffers
-
-        // TODO: Execute multi-draw indirect
+        // Opaque draw pass
+        // The viewport is managed by VoxyRenderSystem and passed here or accessed via
+        // traversal
+        sectionRenderer.renderOpaque(traversal.getViewport());
 
         GlShader.unbind();
         glBindVertexArray(0);
@@ -136,9 +139,8 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
         // Use translucent shader
         translucentShader.use();
 
-        // TODO: Set uniforms
-
-        // TODO: Execute sorted draws for translucent geometry
+        // Translucent draw pass (Sorted/Bucketed)
+        sectionRenderer.renderTranslucent(traversal.getViewport());
 
         GlShader.unbind();
         glBindVertexArray(0);

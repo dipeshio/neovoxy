@@ -88,9 +88,6 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
     
-    // RocksDB for persistent storage
-    implementation 'org.rocksdb:rocksdbjni:10.2.1'
-    
     // Compression libraries
     implementation 'org.lz4:lz4-java:1.8.0'
     implementation 'org.tukaani:xz:1.10'
@@ -102,6 +99,7 @@ dependencies {
     // Embeddium - required dependency for rendering integration
     implementation "maven.modrinth:embeddium:1.0.15+mc1.21.1"
 }
+
 
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [

@@ -2,12 +2,10 @@ package me.cortex.neovoxy.client.core.rendering.hierachical;
 
 import me.cortex.neovoxy.client.core.gl.GlBuffer;
 import me.cortex.neovoxy.client.core.gl.GlShader;
+import me.cortex.neovoxy.client.core.rendering.Viewport;
 import me.cortex.neovoxy.common.Logger;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL43.*;
-import static org.lwjgl.opengl.GL45.*;
 
 /**
  * GPU-driven hierarchical occlusion traversal using compute shaders.
@@ -31,6 +29,7 @@ public class HierarchicalOcclusionTraverser implements AutoCloseable {
     private final AsyncNodeManager nodeManager;
     private final NodeCleaner nodeCleaner;
     private final RenderGenerationService renderGen;
+    private Viewport viewport;
 
     // Compute shaders
     private GlShader traversalShader;
@@ -47,6 +46,14 @@ public class HierarchicalOcclusionTraverser implements AutoCloseable {
         this.nodeManager = nodeManager;
         this.nodeCleaner = nodeCleaner;
         this.renderGen = renderGen;
+    }
+
+    public void setViewport(Viewport viewport) {
+        this.viewport = viewport;
+    }
+
+    public Viewport getViewport() {
+        return viewport;
     }
 
     /**
@@ -75,7 +82,7 @@ public class HierarchicalOcclusionTraverser implements AutoCloseable {
                     .define("REQUEST_QUEUE_BINDING", 6)
                     .define("RENDER_QUEUE_BINDING", 7)
                     .define("RENDER_TRACKER_BINDING", 8)
-                    .define("MAX_REQUEST_QUEUE_SIZE", 1 << 16)
+                    .define("MAX_REQUEST_QUEUE_SIZE", "65536") // Use string value
                     .build();
 
             // Allocate queue buffers

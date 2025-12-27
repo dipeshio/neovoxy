@@ -1,4 +1,7 @@
 #define SENTINAL_OUT_OF_BOUNDS uint(-1)
+#define LOCAL_SIZE_BITS 7
+#define LOCAL_SIZE_MSK ((1<<LOCAL_SIZE_BITS)-1)
+#define LOCAL_SIZE (1<<LOCAL_SIZE_BITS)
 
 layout(location = NODE_QUEUE_INDEX_BINDING) uniform uint queueIdx;
 
@@ -28,7 +31,7 @@ void pushNodesInit(uint nodeCount) {
     //Debug
     #ifdef DEBUG
     if (queueIdx >= (MAX_ITERATIONS-1)) {
-        printf("LOG: Traversal tried inserting a node into next iteration, which is outside max iteration bounds. GID: %d, count: %d", gl_GlobalInvocationID.x, nodeCount);
+        //printf("LOG: Traversal tried inserting a node into next iteration, which is outside max iteration bounds. GID: %d, count: %d", gl_GlobalInvocationID.x, nodeCount);
         nodePushIndex = -1;
         return;
     }
@@ -44,7 +47,7 @@ void pushNodesInit(uint nodeCount) {
 void pushNode(uint nodeId) {
     #ifdef DEBUG
     if (nodePushIndex == -1) {
-        printf("LOG: Tried pushing node when push node wasnt successful. GID: %d, pushing: %d", gl_GlobalInvocationID.x, nodeId);
+        //printf("LOG: Tried pushing node when push node wasnt successful. GID: %d, pushing: %d", gl_GlobalInvocationID.x, nodeId);
         return;
     }
     #endif

@@ -116,6 +116,21 @@ public class GlShader implements AutoCloseable {
         private String geometrySource;
         private final Map<String, String> defines = new HashMap<>();
 
+        public Builder() {
+        }
+
+        private Builder(Builder other) {
+            this.vertexSource = other.vertexSource;
+            this.fragmentSource = other.fragmentSource;
+            this.computeSource = other.computeSource;
+            this.geometrySource = other.geometrySource;
+            this.defines.putAll(other.defines);
+        }
+
+        public Builder copy() {
+            return new Builder(this);
+        }
+
         public Builder vertex(String source) {
             this.vertexSource = source;
             return this;
@@ -204,11 +219,9 @@ public class GlShader implements AutoCloseable {
                 source = source.substring(versionEnd + 1);
             }
 
-            // Always add printf no-op macro to prevent shader compilation errors
+            // Always add printf no-op to prevent shader compilation errors
             // from debug printf statements (GLSL doesn't support printf)
-            sb.append("#ifndef DEBUG\n");
-            sb.append("#define printf(...)\n");
-            sb.append("#endif\n");
+            sb.append("#define printf\n");
 
             for (Map.Entry<String, String> entry : defines.entrySet()) {
                 if (entry.getValue().isEmpty()) {
