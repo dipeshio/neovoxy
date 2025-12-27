@@ -31,22 +31,18 @@ public class NativeLoader {
                 Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
                 tempFile.toFile().deleteOnExit();
 
-                // Tell LWJGL where to find this specific library
-                // The property format is org.lwjgl.<libname>.libname
-                // For 'liblwjgl_lmdb.so', the name is likely 'lmdb' -> org.lwjgl.lmdb.libname
-                // But LWJGL usually expects the name part.
-                // Actually, simply loading it with System.load is often enough for the JVM to
-                // know it's loaded.
-                // But setting the property ensures LWJGL uses exactly this file.
-
-                String path = tempFile.toAbsolutePath().toString();
-                System.load(path);
-
-                System.out.println("NeoVoxy: Loaded native library: " + libName + " from " + path);
+                System.out
+                        .println("NeoVoxy: Extracted native library: " + libName + " to " + tempFile.toAbsolutePath());
             }
 
+            // Set the library path for LWJGL to find the natives
+            // This is critical - it must happen BEFORE any LWJGL class is loaded
+            String nativePath = tempDir.toAbsolutePath().toString();
+            System.setProperty("org.lwjgl.librarypath", nativePath);
+            System.out.println("NeoVoxy: Set org.lwjgl.librarypath to: " + nativePath);
+
         } catch (IOException e) {
-            throw new RuntimeException("NeoVoxy: Failed to unpack and load native libraries", e);
+            throw new RuntimeException("NeoVoxy: Failed to unpack natives", e);
         }
     }
 }
