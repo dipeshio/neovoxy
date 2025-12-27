@@ -4,7 +4,45 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.42-beta'
+    id "com.gradleup.shadow" version "8.3.0"
 }
+
+// ... existing configuration ...
+
+// Manual Bundling Configuration
+// We use a custom configuration 'bundle' to manually include dependencies in the jar
+configurations.create('bundle') 
+
+// ... existing dependencies ...
+
+// Configure ShadowJar to bundle dependencies and relocate packages
+tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
+    archiveClassifier.set('') // Replace the default jar
+    configurations = [project.configurations.bundle]
+    
+    // Relocate LWJGL packages to avoid conflict with boot layer
+    relocate 'org.lwjgl.util.lmdb', 'me.cortex.neovoxy.shadow.lwjgl.util.lmdb'
+    relocate 'org.lwjgl.util.zstd', 'me.cortex.neovoxy.shadow.lwjgl.util.zstd'
+    // Do NOT relocate org.lwjgl.system or other core packages as that breaks native loading
+    
+    // Exclude module-info to avoid JPMS conflicts
+    exclude "module-info.class"
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/*.RSA"
+}
+
+// Ensure build task uses shadowJar
+tasks.named('build').configure {
+    dependsOn('shadowJar')
+}
+
+// Disable default jar task to avoid confusion
+tasks.named('jar').configure {
+    enabled = false
+}
+
+// ... existing tasks ...
 
 version = mod_version
 group = mod_group_id
@@ -85,7 +123,6 @@ dependencies {
     // Native libraries for LWJGL extensions
     // Manual Bundling Configuration
     // We use a custom configuration 'bundle' to manually include dependencies in the jar
-    configurations.create('bundle') 
     
     // Add dependencies to 'bundle' instead of 'jarJar'
     bundle "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
