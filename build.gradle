@@ -1,0 +1,158 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.42-beta'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = "2024.07.28"
+        minecraftVersion = "1.21"
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    
+    // Modrinth Maven for Embeddium
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    // LWJGL Extensions for native storage
+    implementation platform("org.lwjgl:lwjgl-bom:${lwjgl_version}")
+    
+    // LMDB - Lightning Memory-Mapped Database
+    implementation "org.lwjgl:lwjgl-lmdb"
+    jarJar("org.lwjgl:lwjgl-lmdb:${lwjgl_version}") { jarJar.ranged(it, "[${lwjgl_version},)") }
+    
+    // Zstd compression
+    implementation "org.lwjgl:lwjgl-zstd"
+    jarJar("org.lwjgl:lwjgl-zstd:${lwjgl_version}") { jarJar.ranged(it, "[${lwjgl_version},)") }
+    
+    // Native libraries for LWJGL extensions
+    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
+    
+    // RocksDB for persistent storage
+    implementation 'org.rocksdb:rocksdbjni:10.2.1'
+    jarJar('org.rocksdb:rocksdbjni:[10.2.1,11)') { jarJar.pin(it, '10.2.1') }
+    
+    // Compression libraries
+    implementation 'org.lz4:lz4-java:1.8.0'
+    jarJar('org.lz4:lz4-java:[1.8.0,2)') { jarJar.pin(it, '1.8.0') }
+    
+    implementation 'org.tukaani:xz:1.10'
+    jarJar('org.tukaani:xz:[1.10,2)') { jarJar.pin(it, '1.10') }
+    
+    // Jedis for optional Redis storage backend
+    implementation 'redis.clients:jedis:5.1.0'
+    jarJar('redis.clients:jedis:[5.1.0,6)') { jarJar.pin(it, '5.1.0') }
+    
+    implementation 'org.apache.commons:commons-pool2:2.12.0'
+    jarJar('org.apache.commons:commons-pool2:[2.12.0,3)') { jarJar.pin(it, '2.12.0') }
+    
+    // Embeddium - required dependency for rendering integration
+    implementation "maven.modrinth:embeddium:1.0.15+mc1.21.1"
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : "High-performance Level of Detail (LOD) rendering engine for Minecraft",
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

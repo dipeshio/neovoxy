@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "voxy",
+  "version": "0.2.8-alpha",
+  "custom": {
+    "commit": "837b779",
+    "buildtime": "1766497809"
+  },
+  "name": "Voxy",
+  "description": "Far distance rendering mod utilising LoDs",
+  "authors": [
+    "Cortex"
+  ],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/voxy/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "me.cortex.voxy.client.VoxyClient"
+    ],
+    "modmenu": [
+      "me.cortex.voxy.client.config.ModMenuIntegration"
+    ],
+    "sodium:config_api_user": [
+      "me.cortex.voxy.client.config.VoxyConfigMenu"
+    ],
+    "main": [
+      "me.cortex.voxy.commonImpl.VoxyCommon"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "client.voxy.mixins.json",
+      "environment": "client"
+    },
+    "common.voxy.mixins.json"
+  ],
+  "depends": {
+    "minecraft": [
+      "1.21.11"
+    ],
+    "fabricloader": "\u003e\u003d0.14.22",
+    "fabric-api": "\u003e\u003d0.91.1",
+    "sodium": "\u003d0.8.2"
+  },
+  "accessWidener": "voxy.accesswidener",
+  "jars": [
+    {
+      "file": "META-INF/jars/commons-pool2-2.12.0.jar"
+    },
+    {
+      "file": "META-INF/jars/jedis-5.1.0.jar"
+    },
+    {
+      "file": "META-INF/jars/lwjgl-lmdb-3.3.3-natives-linux.jar"
+    },
+    {
+      "file": "META-INF/jars/lwjgl-lmdb-3.3.3-natives-windows.jar"
+    },
+    {
+      "file": "META-INF/jars/lwjgl-lmdb-3.3.3.jar"
+    },
+    {
+      "file": "META-INF/jars/lwjgl-zstd-3.3.3-natives-linux.jar"
+    },
+    {
+      "file": "META-INF/jars/lwjgl-zstd-3.3.3-natives-windows.jar"
+    },
+    {
+      "file": "META-INF/jars/lwjgl-zstd-3.3.3.jar"
+    },
+    {
+      "file": "META-INF/jars/lz4-java-1.8.0.jar"
+    },
+    {
+      "file": "META-INF/jars/rocksdbjni-10.2.1.jar"
+    },
+    {
+      "file": "META-INF/jars/xz-1.10.jar"
+    }
+  ]
+}

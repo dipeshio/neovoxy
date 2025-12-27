@@ -1,0 +1,68 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Client",
+      "presentation": {
+        "group": "Mod Development - neovoxy",
+        "order": 0
+      },
+      "projectName": "neovoxy",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@/home/hangsalot/Documents/neovoxy/build/moddev/clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@/home/hangsalot/Documents/neovoxy/build/moddev/clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dneovoxy%%/home/hangsalot/Documents/neovoxy/bin/main"
+      ],
+      "cwd": "${workspaceFolder}/run",
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Data",
+      "presentation": {
+        "group": "Mod Development - neovoxy",
+        "order": 1
+      },
+      "projectName": "neovoxy",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@/home/hangsalot/Documents/neovoxy/build/moddev/dataRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@/home/hangsalot/Documents/neovoxy/build/moddev/dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dneovoxy%%/home/hangsalot/Documents/neovoxy/bin/main"
+      ],
+      "cwd": "${workspaceFolder}/run",
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Server",
+      "presentation": {
+        "group": "Mod Development - neovoxy",
+        "order": 2
+      },
+      "projectName": "neovoxy",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@/home/hangsalot/Documents/neovoxy/build/moddev/serverRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@/home/hangsalot/Documents/neovoxy/build/moddev/serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dneovoxy%%/home/hangsalot/Documents/neovoxy/bin/main"
+      ],
+      "cwd": "${workspaceFolder}/run",
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}
