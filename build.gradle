@@ -83,18 +83,21 @@ dependencies {
     implementation "org.lwjgl:lwjgl-zstd"
     
     // Native libraries for LWJGL extensions
-    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
+    // Manual Bundling Configuration
+    // We use a custom configuration 'bundle' to manually include dependencies in the jar
+    configurations.create('bundle') 
     
-    // Bundle LMDB and Zstd via jarJar for runtime availability
-    // Use slightly different version ranges strings to avoid deduplication by Gradle
-    // Both ranges include 3.3.3, but the strings are unique keys
-    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "[${lwjgl_version}, 3.4.0)")
-    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "(3.3.2, ${lwjgl_version}]", classifier: 'natives-linux')
-    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "[${lwjgl_version}, 3.4.0)")
-    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "(3.3.2, ${lwjgl_version}]", classifier: 'natives-linux')
+    // Add dependencies to 'bundle' instead of 'jarJar'
+    bundle "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
+    bundle "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
+    bundle "org.lwjgl:lwjgl-zstd:${lwjgl_version}"
+    bundle "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
+
+    // Also add them to runtime classpath so they work in IDE
+    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
+    runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}"
+    runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
     
     // Compression libraries
     implementation 'org.lz4:lz4-java:1.8.0'
@@ -141,6 +144,18 @@ publishing {
             url "file://${project.projectDir}/repo"
         }
     }
+}
+
+tasks.named('jar', Jar).configure {
+    from {
+        configurations.bundle.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+        exclude "module-info.class"
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.withType(JavaCompile).configureEach {
