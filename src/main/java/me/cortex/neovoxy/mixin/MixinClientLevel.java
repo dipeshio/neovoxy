@@ -1,8 +1,13 @@
 package me.cortex.neovoxy.mixin;
 
+import me.cortex.neovoxy.NeoVoxyClient;
+import me.cortex.neovoxy.client.VoxyClientInstance;
+import me.cortex.neovoxy.client.core.IGetVoxyRenderSystem;
 import me.cortex.neovoxy.common.Logger;
 import me.cortex.neovoxy.commonImpl.VoxyCommon;
+import me.cortex.neovoxy.commonImpl.VoxyInstance;
 import me.cortex.neovoxy.commonImpl.WorldIdentifier;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -11,31 +16,35 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.function.Supplier;
-
-/**
- * Mixin to track ClientLevel lifecycle for Voxy instance management.
- */
 @Mixin(ClientLevel.class)
 public class MixinClientLevel {
     
-    /**
-     * Create Voxy instance when client level is created.
-     */
     @Inject(method = "<init>", at = @At("RETURN"))
     private void neovoxy$onInit(CallbackInfo ci) {
         ClientLevel level = (ClientLevel)(Object)this;
         ResourceKey<Level> dimension = level.dimension();
         
-        // Determine world identifier
-        // For singleplayer: use world name
-        // For multiplayer: use server address
-        String worldName = level.toString(); // Placeholder - need proper world name extraction
+        String worldName = level.toString();
         WorldIdentifier worldId = WorldIdentifier.singleplayer(worldName, dimension);
         
         Logger.info("ClientLevel created, notifying VoxyCommon: {}", worldId);
         
-        // This will create or update the Voxy instance for this world
-        VoxyCommon.getOrCreateInstance(worldId);
+        // Create the Voxy instance for this world
+        VoxyInstance instance = VoxyCommon.getOrCreateInstance(worldId);
+        
+        // If it's a client instance, create and attach the render system
+        if (instance instanceof VoxyClientInstance clientInstance) {
+            if (NeoVoxyClient.isSystemSupported()) {
+                // Create the render system
+                clientInstance.createRenderSystem();
+                
+                // Attach it to the level renderer
+                var levelRenderer = Minecraft.getInstance().levelRenderer;
+                if (levelRenderer instanceof IGetVoxyRenderSystem vrs) {
+                    vrs.setVoxyRenderSystem(clientInstance.getRenderSystem());
+                    Logger.info("VoxyRenderSystem attached to LevelRenderer");
+                }
+            }
+        }
     }
 }

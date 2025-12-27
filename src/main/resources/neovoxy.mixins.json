@@ -10,7 +10,8 @@
         "MixinMinecraft",
         "MixinFogRenderer",
         "MixinRenderSystem",
-        "MixinWindow"
+        "MixinWindow",
+        "MixinVideoSettingsScreen"
     ],
     "injectors": {
         "defaultRequire": 1
