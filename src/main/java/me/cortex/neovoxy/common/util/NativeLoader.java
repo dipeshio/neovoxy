@@ -30,16 +30,24 @@ public class NativeLoader {
                 Path tempFile = tempDir.resolve(libName);
                 Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
                 tempFile.toFile().deleteOnExit();
+                tempFile.toFile().setExecutable(true);
 
+                String absPath = tempFile.toAbsolutePath().toString();
                 System.out
-                        .println("NeoVoxy: Extracted native library: " + libName + " to " + tempFile.toAbsolutePath());
+                        .println("NeoVoxy: Loading native library directly: " + absPath);
+
+                try {
+                    System.load(absPath);
+                    System.out.println("NeoVoxy: Successfully loaded: " + libName);
+                } catch (UnsatisfiedLinkError e) {
+                    System.err.println("NeoVoxy: Failed to load " + libName + ": " + e.getMessage());
+                }
             }
 
-            // Set the library path for LWJGL to find the natives
-            // This is critical - it must happen BEFORE any LWJGL class is loaded
-            String nativePath = tempDir.toAbsolutePath().toString();
-            System.setProperty("org.lwjgl.librarypath", nativePath);
-            System.out.println("NeoVoxy: Set org.lwjgl.librarypath to: " + nativePath);
+            // We NO LONGER set org.lwjgl.librarypath as it doesn't work across module
+            // layers for
+            // JarJar.
+            // Direct System.load() injects it into the ClassLoader.
 
         } catch (IOException e) {
             throw new RuntimeException("NeoVoxy: Failed to unpack natives", e);

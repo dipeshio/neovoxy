@@ -20,7 +20,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 @Mod(NeoVoxy.MOD_ID)
 public class NeoVoxy {
     public static final String MOD_ID = "neovoxy";
-    public static final String MOD_VERSION = "0.1.0.22-alpha";
+    public static final String MOD_VERSION = "0.1.0.23-alpha";
 
     public NeoVoxy(IEventBus modEventBus, ModContainer modContainer) {
         // Load natives first thing
