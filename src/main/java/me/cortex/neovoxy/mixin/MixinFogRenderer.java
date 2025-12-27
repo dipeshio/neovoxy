@@ -1,12 +1,11 @@
 package me.cortex.neovoxy.mixin;
 
-import me.cortex.neovoxy.client.core.gl.GlBuffer;
-import net.minecraft.client.renderer.FogRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.client.renderer.FogRenderer;
 
 /**
  * Mixin to extract fog parameters for LOD rendering.
@@ -39,24 +38,6 @@ public class MixinFogRenderer {
         }
     }
     
-    /**
-     * Get captured fog color for LOD rendering.
-     */
-    public static float[] getFogColor() {
-        return new float[] { neovoxy$fogRed, neovoxy$fogGreen, neovoxy$fogBlue };
-    }
-    
-    /**
-     * Get fog start distance.
-     */
-    public static float getFogStart() {
-        return neovoxy$fogStart;
-    }
-    
-    /**
-     * Get fog end distance.
-     */
-    public static float getFogEnd() {
-        return neovoxy$fogEnd;
-    }
+    // Note: To access fog values from other classes, use an accessor interface
+    // instead of public static methods in the mixin itself.
 }
