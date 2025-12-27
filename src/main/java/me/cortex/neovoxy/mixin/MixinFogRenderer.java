@@ -30,13 +30,13 @@ public class MixinFogRenderer {
      */
     @Inject(method = "setupColor", at = @At("TAIL"))
     private static void neovoxy$captureFogColor(CallbackInfo ci) {
-        // Fog color is set via RenderSystem.clearColor() in this method
-        // We can get it from the render system state
-        float[] color = new float[4];
-        com.mojang.blaze3d.systems.RenderSystem.getShaderFogColor(color);
-        neovoxy$fogRed = color[0];
-        neovoxy$fogGreen = color[1];
-        neovoxy$fogBlue = color[2];
+        // Get fog color from render system
+        float[] color = com.mojang.blaze3d.systems.RenderSystem.getShaderFogColor();
+        if (color != null && color.length >= 3) {
+            neovoxy$fogRed = color[0];
+            neovoxy$fogGreen = color[1];
+            neovoxy$fogBlue = color[2];
+        }
     }
     
     /**

@@ -78,11 +78,9 @@ dependencies {
     
     // LMDB - Lightning Memory-Mapped Database
     implementation "org.lwjgl:lwjgl-lmdb"
-    jarJar("org.lwjgl:lwjgl-lmdb:${lwjgl_version}") { jarJar.ranged(it, "[${lwjgl_version},)") }
     
     // Zstd compression
     implementation "org.lwjgl:lwjgl-zstd"
-    jarJar("org.lwjgl:lwjgl-zstd:${lwjgl_version}") { jarJar.ranged(it, "[${lwjgl_version},)") }
     
     // Native libraries for LWJGL extensions
     runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-windows"
@@ -92,21 +90,14 @@ dependencies {
     
     // RocksDB for persistent storage
     implementation 'org.rocksdb:rocksdbjni:10.2.1'
-    jarJar('org.rocksdb:rocksdbjni:[10.2.1,11)') { jarJar.pin(it, '10.2.1') }
     
     // Compression libraries
     implementation 'org.lz4:lz4-java:1.8.0'
-    jarJar('org.lz4:lz4-java:[1.8.0,2)') { jarJar.pin(it, '1.8.0') }
-    
     implementation 'org.tukaani:xz:1.10'
-    jarJar('org.tukaani:xz:[1.10,2)') { jarJar.pin(it, '1.10') }
     
     // Jedis for optional Redis storage backend
     implementation 'redis.clients:jedis:5.1.0'
-    jarJar('redis.clients:jedis:[5.1.0,6)') { jarJar.pin(it, '5.1.0') }
-    
     implementation 'org.apache.commons:commons-pool2:2.12.0'
-    jarJar('org.apache.commons:commons-pool2:[2.12.0,3)') { jarJar.pin(it, '2.12.0') }
     
     // Embeddium - required dependency for rendering integration
     implementation "maven.modrinth:embeddium:1.0.15+mc1.21.1"

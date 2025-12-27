@@ -269,13 +269,31 @@ public class VoxyRenderSystem implements Closeable {
         if (renderGen != null) renderGen.stop();
         if (nodeManager != null) nodeManager.stop();
         
-        // Close subsystems
-        if (pipeline != null) pipeline.close();
-        if (sectionRenderer != null) sectionRenderer.close();
-        if (traversal != null) traversal.close();
-        if (nodeManager != null) nodeManager.close();
-        if (geometryData != null) geometryData.close();
-        if (modelService != null) modelService.close();
+        // Close subsystems - wrap in try-catch since AutoCloseable.close() throws Exception
+        try {
+            if (pipeline != null) pipeline.close();
+        } catch (Exception e) { Logger.error("Error closing pipeline", e); }
+        
+        try {
+            if (sectionRenderer != null) sectionRenderer.close();
+        } catch (Exception e) { Logger.error("Error closing sectionRenderer", e); }
+        
+        try {
+            if (traversal != null) traversal.close();
+        } catch (Exception e) { Logger.error("Error closing traversal", e); }
+        
+        try {
+            if (nodeManager != null) nodeManager.close();
+        } catch (Exception e) { Logger.error("Error closing nodeManager", e); }
+        
+        try {
+            if (geometryData != null) geometryData.close();
+        } catch (Exception e) { Logger.error("Error closing geometryData", e); }
+        
+        try {
+            if (modelService != null) modelService.close();
+        } catch (Exception e) { Logger.error("Error closing modelService", e); }
+        
         if (sceneUniformBuffer != null) sceneUniformBuffer.close();
         
         worldEngine.releaseRef();

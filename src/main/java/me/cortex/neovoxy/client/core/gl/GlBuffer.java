@@ -64,7 +64,11 @@ public class GlBuffer implements AutoCloseable {
         this.size = (long) data.length * Long.BYTES;
         this.flags = flags;
         
-        glNamedBufferStorage(id, data, flags);
+        // Convert long[] to ByteBuffer for GL compatibility
+        java.nio.ByteBuffer byteBuf = org.lwjgl.BufferUtils.createByteBuffer(data.length * Long.BYTES);
+        byteBuf.asLongBuffer().put(data);
+        byteBuf.rewind();
+        glNamedBufferStorage(id, byteBuf, flags);
     }
     
     public int id() {

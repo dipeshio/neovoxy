@@ -13,6 +13,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.GuiLayerManager;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +29,12 @@ public class NeoVoxyDebugOverlay {
     public static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         // Register our debug overlay
         event.registerAboveAll(
-            NeoVoxy.MOD_ID + ":debug_overlay",
+            ResourceLocation.fromNamespaceAndPath(NeoVoxy.MOD_ID, "debug_overlay"),
             NeoVoxyDebugOverlay::render
         );
     }
     
-    private static void render(GuiGraphics graphics, float partialTick) {
+    private static void render(GuiGraphics graphics, net.minecraft.client.DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         
         // Only show in F3 debug mode with render statistics enabled

@@ -1,5 +1,6 @@
 package me.cortex.neovoxy;
 
+import me.cortex.neovoxy.client.VoxyClientInstance;
 import me.cortex.neovoxy.client.config.NeoVoxyConfig;
 import me.cortex.neovoxy.client.core.IGetVoxyRenderSystem;
 import me.cortex.neovoxy.client.core.VoxyRenderSystem;

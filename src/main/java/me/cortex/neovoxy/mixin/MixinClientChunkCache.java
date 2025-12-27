@@ -49,8 +49,8 @@ public class MixinClientChunkCache {
         }
         
         // Convert chunk sections to LOD data
-        int minSection = chunk.getMinSectionY();
-        int maxSection = chunk.getMaxSectionY();
+        int minSection = chunk.getLevel().getMinSection();
+        int maxSection = chunk.getLevel().getMaxSection();
         
         for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
             try {
