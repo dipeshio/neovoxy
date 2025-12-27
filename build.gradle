@@ -89,10 +89,12 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
     
     // Bundle LMDB and Zstd via jarJar for runtime availability
-    jarJar "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
-    jarJar "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
-    jarJar "org.lwjgl:lwjgl-zstd:${lwjgl_version}"
-    jarJar "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
+    // Use slightly different version ranges strings to avoid deduplication by Gradle
+    // Both ranges include 3.3.3, but the strings are unique keys
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "[${lwjgl_version}, 3.4.0)")
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "(3.3.2, ${lwjgl_version}]", classifier: 'natives-linux')
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "[${lwjgl_version}, 3.4.0)")
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "(3.3.2, ${lwjgl_version}]", classifier: 'natives-linux')
     
     // Compression libraries
     implementation 'org.lz4:lz4-java:1.8.0'
