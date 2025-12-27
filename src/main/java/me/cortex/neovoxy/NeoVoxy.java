@@ -23,6 +23,13 @@ public class NeoVoxy {
     public static final String MOD_VERSION = "0.1.0-alpha";
 
     public NeoVoxy(IEventBus modEventBus, ModContainer modContainer) {
+        // Load natives first thing
+        try {
+            me.cortex.neovoxy.common.util.NativeLoader.load();
+        } catch (Exception e) {
+            Logger.error("Failed to load NeoVoxy natives", e);
+        }
+
         Logger.info("NeoVoxy " + MOD_VERSION + " initializing...");
 
         // Register configuration FIRST

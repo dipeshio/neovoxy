@@ -4,45 +4,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.42-beta'
-    id "com.gradleup.shadow" version "8.3.0"
 }
-
-// ... existing configuration ...
-
-// Manual Bundling Configuration
-// We use a custom configuration 'bundle' to manually include dependencies in the jar
-configurations.create('bundle') 
-
-// ... existing dependencies ...
-
-// Configure ShadowJar to bundle dependencies and relocate packages
-tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
-    archiveClassifier.set('') // Replace the default jar
-    configurations = [project.configurations.bundle]
-    
-    // Relocate LWJGL packages to avoid conflict with boot layer
-    relocate 'org.lwjgl.util.lmdb', 'me.cortex.neovoxy.shadow.lwjgl.util.lmdb'
-    relocate 'org.lwjgl.util.zstd', 'me.cortex.neovoxy.shadow.lwjgl.util.zstd'
-    // Do NOT relocate org.lwjgl.system or other core packages as that breaks native loading
-    
-    // Exclude module-info to avoid JPMS conflicts
-    exclude "module-info.class"
-    exclude "META-INF/*.SF"
-    exclude "META-INF/*.DSA"
-    exclude "META-INF/*.RSA"
-}
-
-// Ensure build task uses shadowJar
-tasks.named('build').configure {
-    dependsOn('shadowJar')
-}
-
-// Disable default jar task to avoid confusion
-tasks.named('jar').configure {
-    enabled = false
-}
-
-// ... existing tasks ...
 
 version = mod_version
 group = mod_group_id
@@ -52,6 +14,11 @@ base {
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Native Configuration for manual bundling
+configurations {
+    natives
+}
 
 neoForge {
     version = project.neo_version
@@ -120,15 +87,14 @@ dependencies {
     // Zstd compression
     implementation "org.lwjgl:lwjgl-zstd"
     
-    // Native libraries for LWJGL extensions
-    // Manual Bundling Configuration
-    // We use a custom configuration 'bundle' to manually include dependencies in the jar
+    // Hybrid Bundling Strategy
+    // 1. Use jarJar for main Java libraries to ensure safe module isolation
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-lmdb', version: "[${lwjgl_version}]")
+    jarJar(group: 'org.lwjgl', name: 'lwjgl-zstd', version: "[${lwjgl_version}]")
     
-    // Add dependencies to 'bundle' instead of 'jarJar'
-    bundle "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
-    bundle "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
-    bundle "org.lwjgl:lwjgl-zstd:${lwjgl_version}"
-    bundle "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
+    // 2. Add natives to the configuration for extracting later
+    natives "org.lwjgl:lwjgl-lmdb:${lwjgl_version}:natives-linux"
+    natives "org.lwjgl:lwjgl-zstd:${lwjgl_version}:natives-linux"
 
     // Also add them to runtime classpath so they work in IDE
     runtimeOnly "org.lwjgl:lwjgl-lmdb:${lwjgl_version}"
@@ -147,7 +113,6 @@ dependencies {
     // Embeddium - required dependency for rendering integration
     implementation "maven.modrinth:embeddium:1.0.15+mc1.21.1"
 }
-
 
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
@@ -183,16 +148,34 @@ publishing {
     }
 }
 
-tasks.named('jar', Jar).configure {
+// Create a task to copy natives to resources
+tasks.register('bundleNatives', Copy) {
     from {
-        configurations.bundle.collect { it.isDirectory() ? it : zipTree(it) }
-    } {
-        exclude "META-INF/*.SF"
-        exclude "META-INF/*.DSA"
-        exclude "META-INF/*.RSA"
-        exclude "module-info.class"
+        configurations.natives.collect { zipTree(it) }
     }
+    into "build/resources/main/META-INF/natives/linux"
+    include "*.so" // Only include Linux shared objects
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Ensure natives are bundled before processResources
+processResources.dependsOn('bundleNatives')
+
+// Also ensure they are available for the jar task
+jar.dependsOn('bundleNatives')
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+            "Specification-Title"     : mod_id,
+            "Specification-Vendor"    : mod_authors,
+            "Specification-Version"   : "1",
+            "Implementation-Title"    : project.name,
+            "Implementation-Version"  : project.jar.archiveVersion,
+            "Implementation-Vendor"   : mod_authors,
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
