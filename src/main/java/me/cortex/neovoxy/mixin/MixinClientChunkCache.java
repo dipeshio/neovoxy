@@ -7,6 +7,8 @@ import me.cortex.neovoxy.common.world.other.Mapper;
 import me.cortex.neovoxy.commonImpl.VoxyCommon;
 import me.cortex.neovoxy.client.VoxyClientInstance;
 import net.minecraft.client.multiplayer.ClientChunkCache;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 /**
  * Mixin to intercept chunk loading for LOD generation.
@@ -28,9 +30,12 @@ public class MixinClientChunkCache {
     
     /**
      * Intercept chunk arrival from server.
+     * Note: Method signature must match the actual 1.21.1 replaceWithPacketData
      */
     @Inject(method = "replaceWithPacketData", at = @At("RETURN"))
-    private void neovoxy$onChunkLoaded(int x, int z, CallbackInfoReturnable<LevelChunk> cir) {
+    private void neovoxy$onChunkLoaded(int x, int z, FriendlyByteBuf buf, 
+                                        CompoundTag tag, Consumer<?> consumer,
+                                        CallbackInfoReturnable<LevelChunk> cir) {
         LevelChunk chunk = cir.getReturnValue();
         if (chunk == null) return;
         
