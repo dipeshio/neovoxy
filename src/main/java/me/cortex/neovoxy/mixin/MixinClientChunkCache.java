@@ -9,6 +9,7 @@ import me.cortex.neovoxy.client.VoxyClientInstance;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -73,9 +74,10 @@ public class MixinClientChunkCache {
     
     /**
      * Intercept chunk unloading.
+     * In 1.21.1, drop takes ChunkPos instead of (int, int)
      */
     @Inject(method = "drop", at = @At("HEAD"))
-    private void neovoxy$onChunkUnloaded(int x, int z, CallbackInfo ci) {
+    private void neovoxy$onChunkUnloaded(ChunkPos pos, CallbackInfo ci) {
         // Chunks that are unloaded don't need immediate LOD regeneration
         // The LOD data persists in storage
     }
