@@ -2,7 +2,7 @@
 
 A NeoForge port of the [Voxy](https://github.com/MCRcortex/voxy) LOD rendering engine for Minecraft 1.21.1.
 
-** THIS IS STILL A HEAVY WIP, IT DOES NOT CURRENTLY WORK AS INTENDED **
+**THIS IS STILL A HEAVY WIP, IT DOES NOT CURRENTLY WORK AS INTENDED**
 
 ## Overview
 
