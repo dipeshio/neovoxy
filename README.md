@@ -2,6 +2,8 @@
 
 A NeoForge port of the [Voxy](https://github.com/MCRcortex/voxy) LOD rendering engine for Minecraft 1.21.1.
 
+** THIS IS STILL A HEAVY WIP, IT DOES NOT CURRENTLY WORK AS INTENDED **
+
 ## Overview
 
 NeoVoxy is a high-performance Level of Detail (LOD) rendering system that uses GPU-driven hierarchical occlusion culling and quad-based geometry to render distant terrain far beyond vanilla render distance.
